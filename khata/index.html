@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mera Khata</title>
+<meta name="description" content="Offline udhaar khata: customers aur suppliers ka hisaab">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6f5; --card: #ffffff; --text: #17201d; --muted: #63706b; --line: #e2e7e5;
+  --brand: #0f766e; --brand-ink: #ffffff;
+  --gave: #c0392b; --gave-bg: #fdecea; --got: #1e8449; --got-bg: #e8f6ee;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1413; --card: #182120; --text: #e6efec; --muted: #94a39e; --line: #26312f;
+    --brand: #14b8a6; --brand-ink: #04211e;
+    --gave: #f1948a; --gave-bg: #3a1d1a; --got: #7dcea0; --got-bg: #16301f;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1413; --card: #182120; --text: #e6efec; --muted: #94a39e; --line: #26312f;
+  --brand: #14b8a6; --brand-ink: #04211e;
+  --gave: #f1948a; --gave-bg: #3a1d1a; --got: #7dcea0; --got-bg: #16301f;
+  --shadow: none;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font-family: "Inter", system-ui, sans-serif; font-size: 15px; line-height: 1.5; min-height: 100vh; }
+:root[lang="ur"] body { font-family: "Noto Nastaliq Urdu", "Inter", system-ui, sans-serif; line-height: 2; }
+.num { font-family: "Inter", system-ui, sans-serif; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+button, input, select, textarea { font: inherit; color: inherit; }
+.app { max-width: 640px; margin: 0 auto; padding-bottom: 96px; }
+header { background: var(--brand); color: var(--brand-ink); padding: 14px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 5; }
+header h1 { font-size: 18px; margin: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.icon-btn { background: transparent; border: 0; color: inherit; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: inline-grid; place-items: center; font-size: 18px; }
+.icon-btn:hover { background: rgba(255,255,255,.15); }
+.summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 16px 0; }
+.sum-card { background: var(--card); border-radius: 12px; padding: 12px; box-shadow: var(--shadow); }
+.sum-card .label { font-size: 13px; color: var(--muted); }
+.sum-card .amt { font-size: 20px; font-weight: 700; }
+.got { color: var(--got); } .gave { color: var(--gave); }
+.tabs { display: flex; margin: 14px 16px 0; background: var(--card); border-radius: 10px; padding: 4px; box-shadow: var(--shadow); }
+.tabs button { flex: 1; border: 0; background: transparent; padding: 8px; border-radius: 8px; cursor: pointer; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--brand); color: var(--brand-ink); font-weight: 600; }
+.search { margin: 12px 16px 0; }
+.search input, .field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.list { margin: 12px 16px 0; background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+.row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); cursor: pointer; width: 100%; background: transparent; border-inline: 0; border-top: 0; text-align: start; }
+.row:last-child { border-bottom: 0; }
+.row:hover { background: color-mix(in srgb, var(--brand) 6%, transparent); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: color-mix(in srgb, var(--brand) 18%, var(--card)); color: var(--brand); display: grid; place-items: center; font-weight: 700; flex: none; font-family: "Inter", sans-serif; }
+.row .main { flex: 1; min-width: 0; }
+.row .name, .row .sub { display: block; }
+.row .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .sub { font-size: 12px; color: var(--muted); }
+.row .bal { text-align: end; }
+.row .bal small { display: block; font-size: 11px; color: var(--muted); }
+.empty { padding: 32px 16px; text-align: center; color: var(--muted); }
+.fab { position: fixed; bottom: 20px; inset-inline-end: max(16px, calc(50% - 304px)); background: var(--brand); color: var(--brand-ink); border: 0; border-radius: 28px; padding: 14px 20px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,.2); cursor: pointer; }
+.ledger-head { background: var(--card); margin: 14px 16px 0; border-radius: 12px; padding: 14px; box-shadow: var(--shadow); text-align: center; }
+.ledger-head .amt { font-size: 26px; font-weight: 700; }
+.actions { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--bg); border-radius: 20px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+.entry-cols { display: grid; grid-template-columns: 1fr 90px 90px; gap: 8px; padding: 8px 14px; font-size: 12px; color: var(--muted); }
+.entry { display: grid; grid-template-columns: 1fr 90px 90px; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); align-items: center; cursor: pointer; }
+.entry:last-child { border-bottom: 0; }
+.entry .when { font-size: 12px; color: var(--muted); }
+.entry .cell { text-align: center; border-radius: 6px; padding: 4px 2px; font-weight: 600; }
+.entry .cell.gave { background: var(--gave-bg); }
+.entry .cell.got { background: var(--got-bg); }
+.bottom-bar { position: fixed; bottom: 0; inset-inline: 0; display: flex; gap: 10px; padding: 12px 16px; background: var(--bg); max-width: 640px; margin: 0 auto; }
+.bottom-bar button { flex: 1; border: 0; border-radius: 10px; padding: 14px; font-weight: 700; cursor: pointer; color: #fff; }
+.btn-gave { background: var(--gave); } .btn-got { background: var(--got); }
+dialog { border: 0; border-radius: 14px; padding: 0; width: min(440px, calc(100vw - 32px)); background: var(--card); color: var(--text); }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+dialog form { padding: 18px; display: grid; gap: 12px; }
+dialog h2 { margin: 0; font-size: 18px; }
+.field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.seg { display: flex; gap: 8px; }
+.seg label { flex: 1; text-align: center; border: 1px solid var(--line); border-radius: 10px; padding: 8px; cursor: pointer; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg input:checked + span { font-weight: 700; }
+.seg label:has(input:checked) { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); }
+.dlg-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.btn { border: 0; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-weight: 600; }
+.btn.primary { background: var(--brand); color: var(--brand-ink); }
+.btn.ghost { background: transparent; border: 1px solid var(--line); }
+.btn.danger { background: var(--gave); color: #fff; }
+.menu-list { display: grid; gap: 6px; }
+.menu-list button { text-align: start; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; }
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+.toast.show { opacity: 1; }
+.hidden { display: none !important; }
+@media print {
+  header, .fab, .bottom-bar, .actions, .tabs, .search, .summary { display: none !important; }
+  body { background: #fff; color: #000; }
+  .list, .ledger-head { box-shadow: none; border: 1px solid #ccc; }
+  .print-only { display: block !important; }
+}
+.print-only { display: none; margin: 16px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <button class="icon-btn hidden" id="backBtn" aria-label="Back">➜</button>
+    <h1 id="title">Mera Khata</h1>
+    <button class="icon-btn" id="menuBtn" aria-label="Menu">☰</button>
+  </header>
+
+  <!-- Home -->
+  <main id="homeView">
+    <section class="summary">
+      <div class="sum-card"><div class="label" data-i18n="willGet"></div><div class="amt got num" id="sumGet">0</div></div>
+      <div class="sum-card"><div class="label" data-i18n="willGive"></div><div class="amt gave num" id="sumGive">0</div></div>
+    </section>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-type="customer" aria-selected="true" data-i18n="customers"></button>
+      <button role="tab" data-type="supplier" aria-selected="false" data-i18n="suppliers"></button>
+    </div>
+    <div class="search"><input type="search" id="searchInput" data-i18n-ph="search"></div>
+    <div class="list" id="partyList"></div>
+    <button class="fab" id="addPartyBtn"></button>
+  </main>
+
+  <!-- Ledger -->
+  <main id="ledgerView" class="hidden">
+    <div class="print-only" id="printHead"></div>
+    <section class="ledger-head">
+      <div class="label" id="ledgerLabel"></div>
+      <div class="amt num" id="ledgerBal">0</div>
+      <div class="actions">
+        <button class="chip" id="remindBtn" data-i18n="remind"></button>
+        <button class="chip" id="callBtn" data-i18n="call"></button>
+        <button class="chip" id="printBtn" data-i18n="report"></button>
+        <button class="chip" id="editPartyBtn" data-i18n="edit"></button>
+      </div>
+    </section>
+    <div class="list">
+      <div class="entry-cols"><span data-i18n="entries"></span><span style="text-align:center" data-i18n="gaveCol"></span><span style="text-align:center" data-i18n="gotCol"></span></div>
+      <div id="entryList"></div>
+    </div>
+    <div class="bottom-bar">
+      <button class="btn-gave" id="gaveBtn"></button>
+      <button class="btn-got" id="gotBtn"></button>
+    </div>
+  </main>
+</div>
+
+<!-- Party dialog -->
+<dialog id="partyDlg">
+  <form method="dialog" id="partyForm">
+    <h2 id="partyDlgTitle"></h2>
+    <div class="field"><label for="pName" data-i18n="name"></label><input id="pName" required maxlength="60" autocomplete="off"></div>
+    <div class="field"><label for="pPhone" data-i18n="phone"></label><input id="pPhone" type="tel" inputmode="tel" maxlength="20" class="num" placeholder="03XX XXXXXXX"></div>
+    <div class="seg">
+      <label><input type="radio" name="pType" value="customer" checked><span data-i18n="customer"></span></label>
+      <label><input type="radio" name="pType" value="supplier"><span data-i18n="supplier"></span></label>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn danger hidden" id="deletePartyBtn" data-i18n="delete"></button>
+      <button type="button" class="btn ghost" data-close data-i18n="cancel"></button>
+      <button type="submit" class="btn primary" data-i18n="save"></button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Entry dialog -->
+<dialog id="entryDlg">
+  <form method="dialog" id="entryForm">
+    <h2 id="entryDlgTitle"></h2>
+    <div class="field"><label for="eAmount" data-i18n="amount"></label><input id="eAmount" type="number" inputmode="decimal" min="0.01" step="0.01" required class="num"></div>
+    <div class="field"><label for="eNote" data-i18n="note"></label><input id="eNote" maxlength="120" autocomplete="off"></div>
+    <div class="field"><label for="eDate" data-i18n="date"></label><input id="eDate" type="date" required class="num"></div>
+    <div class="dlg-actions">
+      <button type="button" class="btn danger hidden" id="deleteEntryBtn" data-i18n="delete"></button>
+      <button type="button" class="btn ghost" data-close data-i18n="cancel"></button>
+      <button type="submit" class="btn primary" data-i18n="save"></button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Menu dialog -->
+<dialog id="menuDlg">
+  <form method="dialog">
+    <h2 data-i18n="settings"></h2>
+    <div class="field"><label for="bizName" data-i18n="bizName"></label><input id="bizName" maxlength="40"></div>
+    <div class="menu-list">
+      <button type="button" id="langBtn"></button>
+      <button type="button" id="themeBtn" data-i18n="theme"></button>
+      <button type="button" id="exportBtn" data-i18n="backup"></button>
+      <button type="button" id="importBtn" data-i18n="restore"></button>
+    </div>
+    <input type="file" id="importFile" accept="application/json,.json" class="hidden">
+    <div class="dlg-actions"><button type="submit" class="btn primary" data-i18n="done"></button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const KEY = 'mera-khata-v1';
+
+  const T = {
+    ur: {
+      appName: 'میرا کھاتہ', willGet: 'آپ نے لینے ہیں', willGive: 'آپ نے دینے ہیں',
+      customers: 'گاہک', suppliers: 'سپلائر', customer: 'گاہک', supplier: 'سپلائر',
+      search: 'نام یا نمبر سے تلاش کریں', addCustomer: '+ گاہک شامل کریں', addSupplier: '+ سپلائر شامل کریں',
+      editParty: 'تفصیل تبدیل کریں', name: 'نام', phone: 'فون نمبر', save: 'محفوظ کریں', cancel: 'منسوخ', delete: 'حذف کریں',
+      gave: 'دیے', got: 'لیے', gaveBtn: 'آپ نے دیے', gotBtn: 'آپ نے لیے', gaveCol: 'دیے', gotCol: 'لیے',
+      amount: 'رقم (روپے)', note: 'تفصیل (اختیاری)', date: 'تاریخ', entries: 'اندراجات',
+      remind: 'واٹس ایپ یاد دہانی', call: 'کال', report: 'رپورٹ / پرنٹ', edit: 'ترمیم',
+      settled: 'حساب برابر ہے', youGet: 'آپ نے لینے ہیں', youGive: 'آپ نے دینے ہیں',
+      noParties: 'ابھی کوئی کھاتہ نہیں۔ نیچے بٹن سے شامل کریں۔', noMatch: 'کوئی نتیجہ نہیں ملا', noEntries: 'ابھی کوئی لین دین نہیں',
+      settings: 'سیٹنگز', bizName: 'کاروبار کا نام', theme: 'لائٹ / ڈارک موڈ', backup: 'بیک اپ ڈاؤن لوڈ کریں (JSON)',
+      restore: 'بیک اپ سے بحال کریں', done: 'ٹھیک ہے', langSwitch: 'Switch to English',
+      confirmDelParty: 'یہ کھاتہ اور اس کے تمام اندراجات حذف کر دیں؟', confirmDelEntry: 'یہ اندراج حذف کر دیں؟',
+      confirmRestore: 'موجودہ ڈیٹا بیک اپ سے بدل دیا جائے گا۔ جاری رکھیں؟',
+      saved: 'محفوظ ہو گیا', restored: 'ڈیٹا بحال ہو گیا', badFile: 'یہ فائل درست بیک اپ نہیں', noPhone: 'فون نمبر موجود نہیں',
+      bal: 'بیلنس', entriesCount: n => `${n} اندراجات`,
+      reminderMsg: (name, amt, biz) => `السلام علیکم ${name}،\n${biz} کے کھاتے میں آپ کی طرف ${amt} روپے باقی ہیں۔ براہ کرم جلد ادائیگی کر دیں۔ شکریہ!`,
+      reportFor: 'کھاتہ رپورٹ', printedOn: 'تاریخ',
+    },
+    en: {
+      appName: 'My Khata', willGet: 'You will get', willGive: 'You will give',
+      customers: 'Customers', suppliers: 'Suppliers', customer: 'Customer', supplier: 'Supplier',
+      search: 'Search by name or number', addCustomer: '+ Add customer', addSupplier: '+ Add supplier',
+      editParty: 'Edit details', name: 'Name', phone: 'Phone number', save: 'Save', cancel: 'Cancel', delete: 'Delete',
+      gave: 'Gave', got: 'Got', gaveBtn: 'You gave', gotBtn: 'You got', gaveCol: 'Gave', gotCol: 'Got',
+      amount: 'Amount (Rs)', note: 'Note (optional)', date: 'Date', entries: 'Entries',
+      remind: 'WhatsApp reminder', call: 'Call', report: 'Report / Print', edit: 'Edit',
+      settled: 'Settled up', youGet: 'You will get', youGive: 'You will give',
+      noParties: 'No accounts yet. Add one with the button below.', noMatch: 'No results', noEntries: 'No transactions yet',
+      settings: 'Settings', bizName: 'Business name', theme: 'Light / dark mode', backup: 'Download backup (JSON)',
+      restore: 'Restore from backup', done: 'Done', langSwitch: 'اردو میں دیکھیں',
+      confirmDelParty: 'Delete this account and all its entries?', confirmDelEntry: 'Delete this entry?',
+      confirmRestore: 'Current data will be replaced by the backup. Continue?',
+      saved: 'Saved', restored: 'Data restored', badFile: 'This file is not a valid backup', noPhone: 'No phone number saved',
+      bal: 'Balance', entriesCount: n => `${n} entries`,
+      reminderMsg: (name, amt, biz) => `Hello ${name},\nRs ${amt} is pending in your account with ${biz}. Please pay at your earliest convenience. Thank you!`,
+      reportFor: 'Account statement', printedOn: 'Date',
+    },
+  };
+
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY));
+      if (s && Array.isArray(s.parties) && Array.isArray(s.entries)) return s;
+    } catch (_) {}
+    return { biz: '', lang: 'ur', theme: '', parties: [], entries: [] };
+  }
+  let state = load();
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) { toast('Storage unavailable'); }
+  }
+
+  let view = { screen: 'home', tab: 'customer', partyId: null, query: '' };
+  let editing = { partyId: null, entryId: null, kind: null };
+
+  const $ = id => document.getElementById(id);
+  const t = k => T[state.lang][k];
+
+  const fmt = n => new Intl.NumberFormat('en-PK', { maximumFractionDigits: 2 }).format(Math.abs(n));
+  const fmtDate = s => new Date(s + 'T00:00:00').toLocaleDateString(state.lang === 'ur' ? 'ur-PK' : 'en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  // balance > 0: party owes you (you will get); < 0: you owe the party (you will give)
+  const balanceOf = pid => state.entries.reduce((b, e) => e.partyId !== pid ? b : b + (e.kind === 'gave' ? e.amount : -e.amount), 0);
+
+  function toast(msg) {
+    const el = $('toast'); el.textContent = msg; el.classList.add('show');
+    clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
+  function applyLang() {
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = state.lang === 'ur' ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+    $('langBtn').textContent = t('langSwitch');
+    $('gaveBtn').textContent = t('gaveBtn');
+    $('gotBtn').textContent = t('gotBtn');
+    $('backBtn').textContent = state.lang === 'ur' ? '➜' : '←';
+  }
+  function applyTheme() {
+    if (state.theme) document.documentElement.dataset.theme = state.theme;
+    else delete document.documentElement.dataset.theme;
+  }
+
+  function render() {
+    applyLang();
+    const home = view.screen === 'home';
+    $('homeView').classList.toggle('hidden', !home);
+    $('ledgerView').classList.toggle('hidden', home);
+    $('backBtn').classList.toggle('hidden', home);
+    $('menuBtn').classList.toggle('hidden', !home);
+    home ? renderHome() : renderLedger();
+  }
+
+  function renderHome() {
+    $('title').textContent = state.biz || t('appName');
+    let get = 0, give = 0;
+    state.parties.forEach(p => { const b = balanceOf(p.id); if (b > 0) get += b; else give -= b; });
+    $('sumGet').textContent = 'Rs ' + fmt(get);
+    $('sumGive').textContent = 'Rs ' + fmt(give);
+    document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.type === view.tab));
+    $('addPartyBtn').textContent = t(view.tab === 'customer' ? 'addCustomer' : 'addSupplier');
+
+    const q = view.query.trim().toLowerCase();
+    const parties = state.parties
+      .filter(p => p.type === view.tab)
+      .filter(p => !q || p.name.toLowerCase().includes(q) || (p.phone || '').includes(q))
+      .map(p => ({ p, bal: balanceOf(p.id), last: lastActivity(p.id) }))
+      .sort((a, b) => b.last.localeCompare(a.last));
+
+    const list = $('partyList');
+    list.replaceChildren();
+    if (!parties.length) {
+      const d = document.createElement('div'); d.className = 'empty';
+      d.textContent = q ? t('noMatch') : t('noParties');
+      list.append(d); return;
+    }
+    parties.forEach(({ p, bal }) => {
+      const row = document.createElement('button');
+      row.className = 'row';
+      row.innerHTML = `<span class="avatar"></span><span class="main"><span class="name"></span><span class="sub num"></span></span><span class="bal"><span class="num"></span><small></small></span>`;
+      row.querySelector('.avatar').textContent = (p.name.trim()[0] || '?').toUpperCase();
+      row.querySelector('.name').textContent = p.name;
+      row.querySelector('.sub').textContent = p.phone || '';
+      const amt = row.querySelector('.bal .num');
+      amt.textContent = 'Rs ' + fmt(bal);
+      amt.className = 'num ' + (bal > 0 ? 'got' : bal < 0 ? 'gave' : '');
+      row.querySelector('.bal small').textContent = bal > 0 ? t('youGet') : bal < 0 ? t('youGive') : t('settled');
+      row.onclick = () => { view.screen = 'ledger'; view.partyId = p.id; render(); window.scrollTo(0, 0); };
+      list.append(row);
+    });
+  }
+
+  function lastActivity(pid) {
+    const p = state.parties.find(x => x.id === pid);
+    return state.entries.filter(e => e.partyId === pid).reduce((m, e) => (e.created > m ? e.created : m), p ? p.created : '');
+  }
+
+  function renderLedger() {
+    const p = state.parties.find(x => x.id === view.partyId);
+    if (!p) { view.screen = 'home'; return render(); }
+    $('title').textContent = p.name;
+    const bal = balanceOf(p.id);
+    $('ledgerLabel').textContent = bal > 0 ? t('youGet') : bal < 0 ? t('youGive') : t('settled');
+    $('ledgerBal').textContent = 'Rs ' + fmt(bal);
+    $('ledgerBal').className = 'amt num ' + (bal > 0 ? 'got' : bal < 0 ? 'gave' : '');
+    $('remindBtn').classList.toggle('hidden', !(bal > 0 && p.phone));
+    $('callBtn').classList.toggle('hidden', !p.phone);
+
+    const entries = state.entries.filter(e => e.partyId === p.id)
+      .sort((a, b) => (b.date + b.created).localeCompare(a.date + a.created));
+    const list = $('entryList');
+    list.replaceChildren();
+    if (!entries.length) {
+      const d = document.createElement('div'); d.className = 'empty'; d.textContent = t('noEntries'); list.append(d);
+    }
+    // Running balance computed oldest-first, displayed newest-first.
+    let run = 0; const runs = new Map();
+    [...entries].reverse().forEach(e => { run += e.kind === 'gave' ? e.amount : -e.amount; runs.set(e.id, run); });
+    entries.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'entry'; row.tabIndex = 0;
+      row.innerHTML = `<div><div class="when num"></div><div class="note"></div><div class="when"></div></div><div class="cell"></div><div class="cell"></div>`;
+      const [info, gaveCell, gotCell] = row.children;
+      info.children[0].textContent = fmtDate(e.date);
+      info.children[1].textContent = e.note || '';
+      const r = runs.get(e.id);
+      info.children[2].textContent = `${t('bal')}: Rs ${fmt(r)}`;
+      info.children[2].className = 'when ' + (r > 0 ? 'got' : r < 0 ? 'gave' : '');
+      const target = e.kind === 'gave' ? gaveCell : gotCell;
+      target.textContent = fmt(e.amount);
+      target.classList.add('num', e.kind);
+      row.onclick = row.onkeydown = ev => { if (ev.type === 'keydown' && ev.key !== 'Enter') return; openEntry(e.kind, e); };
+      list.append(row);
+    });
+
+    $('printHead').innerHTML = '';
+    const h = document.createElement('h2'); h.textContent = `${state.biz || t('appName')} — ${t('reportFor')}`;
+    const s = document.createElement('div'); s.textContent = `${p.name} ${p.phone ? '(' + p.phone + ')' : ''} · ${t('printedOn')}: ${fmtDate(today())}`;
+    $('printHead').append(h, s);
+  }
+
+  // Party dialog
+  function openParty(p) {
+    editing.partyId = p ? p.id : null;
+    $('partyDlgTitle').textContent = p ? t('editParty') : t(view.tab === 'customer' ? 'addCustomer' : 'addSupplier').replace('+ ', '');
+    $('pName').value = p ? p.name : '';
+    $('pPhone').value = p ? p.phone : '';
+    const type = p ? p.type : view.tab;
+    document.querySelectorAll('input[name="pType"]').forEach(r => { r.checked = r.value === type; });
+    $('deletePartyBtn').classList.toggle('hidden', !p);
+    $('partyDlg').showModal();
+    $('pName').focus();
+  }
+  $('partyForm').addEventListener('submit', ev => {
+    const name = $('pName').value.trim();
+    if (!name) { ev.preventDefault(); return; }
+    const phone = $('pPhone').value.trim();
+    const type = document.querySelector('input[name="pType"]:checked').value;
+    if (editing.partyId) {
+      Object.assign(state.parties.find(x => x.id === editing.partyId), { name, phone, type });
+    } else {
+      const p = { id: uid(), name, phone, type, created: new Date().toISOString() };
+      state.parties.push(p);
+      view.screen = 'ledger'; view.partyId = p.id;
+    }
+    view.tab = type;
+    persist(); render(); toast(t('saved'));
+  });
+  $('deletePartyBtn').onclick = () => {
+    if (!confirm(t('confirmDelParty'))) return;
+    state.entries = state.entries.filter(e => e.partyId !== editing.partyId);
+    state.parties = state.parties.filter(p => p.id !== editing.partyId);
+    persist(); $('partyDlg').close(); view.screen = 'home'; render();
+  };
+
+  // Entry dialog
+  function openEntry(kind, e) {
+    editing.entryId = e ? e.id : null; editing.kind = kind;
+    $('entryDlgTitle').textContent = t(kind === 'gave' ? 'gaveBtn' : 'gotBtn');
+    $('entryDlgTitle').className = kind;
+    $('eAmount').value = e ? e.amount : '';
+    $('eNote').value = e ? e.note : '';
+    $('eDate').value = e ? e.date : today();
+    $('deleteEntryBtn').classList.toggle('hidden', !e);
+    $('entryDlg').showModal();
+    $('eAmount').focus();
+  }
+  $('entryForm').addEventListener('submit', ev => {
+    const amount = Math.round(parseFloat($('eAmount').value) * 100) / 100;
+    if (!(amount > 0)) { ev.preventDefault(); return; }
+    const data = { amount, note: $('eNote').value.trim(), date: $('eDate').value || today() };
+    if (editing.entryId) Object.assign(state.entries.find(x => x.id === editing.entryId), data);
+    else state.entries.push({ id: uid(), partyId: view.partyId, kind: editing.kind, created: new Date().toISOString(), ...data });
+    persist(); render(); toast(t('saved'));
+  });
+  $('deleteEntryBtn').onclick = () => {
+    if (!confirm(t('confirmDelEntry'))) return;
+    state.entries = state.entries.filter(e => e.id !== editing.entryId);
+    persist(); $('entryDlg').close(); render();
+  };
+
+  document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('dialog').close());
+
+  // Navigation & actions
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { view.tab = b.dataset.type; render(); });
+  $('searchInput').oninput = e => { view.query = e.target.value; renderHome(); };
+  $('addPartyBtn').onclick = () => openParty(null);
+  $('backBtn').onclick = () => { view.screen = 'home'; render(); };
+  $('gaveBtn').onclick = () => openEntry('gave');
+  $('gotBtn').onclick = () => openEntry('got');
+  $('editPartyBtn').onclick = () => openParty(state.parties.find(p => p.id === view.partyId));
+  $('printBtn').onclick = () => window.print();
+
+  function intlPhone(phone) {
+    let d = phone.replace(/\D/g, '');
+    if (d.startsWith('00')) d = d.slice(2);
+    else if (d.startsWith('0')) d = '92' + d.slice(1); // Pakistani local format 03XX...
+    return d;
+  }
+  $('remindBtn').onclick = () => {
+    const p = state.parties.find(x => x.id === view.partyId);
+    if (!p.phone) return toast(t('noPhone'));
+    const msg = t('reminderMsg')(p.name, fmt(balanceOf(p.id)), state.biz || t('appName'));
+    window.open(`https://wa.me/${intlPhone(p.phone)}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+  };
+  $('callBtn').onclick = () => {
+    const p = state.parties.find(x => x.id === view.partyId);
+    if (p.phone) location.href = 'tel:' + p.phone.replace(/[^\d+]/g, '');
+  };
+
+  // Menu
+  $('menuBtn').onclick = () => { $('bizName').value = state.biz; $('menuDlg').showModal(); };
+  $('menuDlg').addEventListener('close', () => { state.biz = $('bizName').value.trim(); persist(); render(); });
+  $('langBtn').onclick = () => { state.lang = state.lang === 'ur' ? 'en' : 'ur'; persist(); render(); };
+  $('themeBtn').onclick = () => {
+    const dark = state.theme ? state.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    state.theme = dark ? 'light' : 'dark'; persist(); applyTheme();
+  };
+  $('exportBtn').onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `khata-backup-${today()}.json`;
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  $('importBtn').onclick = () => $('importFile').click();
+  $('importFile').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try {
+      const s = JSON.parse(await f.text());
+      const ok = s && Array.isArray(s.parties) && Array.isArray(s.entries)
+        && s.parties.every(p => p && typeof p.id === 'string' && typeof p.name === 'string')
+        && s.entries.every(x => x && typeof x.partyId === 'string' && typeof x.amount === 'number' && (x.kind === 'gave' || x.kind === 'got'));
+      if (!ok) throw new Error('invalid');
+      if (!confirm(t('confirmRestore'))) return;
+      state = { biz: '', lang: state.lang, theme: state.theme, ...s };
+      persist(); $('menuDlg').close(); view.screen = 'home'; render(); toast(t('restored'));
+    } catch (_) { toast(t('badFile')); }
+  };
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
+  applyTheme();
+  render();
+})();
+</script>
+</body>
+</html>
