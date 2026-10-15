@@ -2,7 +2,7 @@
   "name": "Mera Khata",
   "short_name": "Khata",
   "description": "Offline udhaar khata for customers and suppliers",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f4f6f5",
