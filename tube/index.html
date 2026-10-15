@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meri Videos</title>
+<meta name="description" content="YouTube videos ki apni list — iPhone home screen app">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Videos">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f5f5; --card: #ffffff; --text: #141414; --muted: #666; --line: #e3e3e3;
+  --brand: #e02424; --brand-ink: #fff; --shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0e0e0e; --card: #1b1b1b; --text: #f1f1f1; --muted: #a0a0a0; --line: #2b2b2b; --shadow: none; }
+}
+:root[data-theme="dark"] { --bg: #0e0e0e; --card: #1b1b1b; --text: #f1f1f1; --muted: #a0a0a0; --line: #2b2b2b; --shadow: none; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font-family: "Noto Nastaliq Urdu", "Inter", system-ui, sans-serif; line-height: 1.9; font-size: 15px;
+  padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); -webkit-tap-highlight-color: transparent; }
+.ltr { direction: ltr; font-family: "Inter", system-ui, sans-serif; line-height: 1.4; }
+button, input { font: inherit; color: inherit; }
+.app { max-width: 720px; margin: 0 auto; }
+header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+header h1 { margin: 0; font-size: 20px; flex: 1; }
+.logo { width: 30px; height: 30px; }
+.player-wrap { position: sticky; top: env(safe-area-inset-top); z-index: 4; background: #000; }
+.player { position: relative; aspect-ratio: 16 / 9; width: 100%; }
+.player > div, .player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.player .placeholder { display: grid; place-items: center; color: #aaa; text-align: center; padding: 16px; }
+.now { padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); }
+.now .t { font-weight: 600; font-family: "Inter", system-ui, sans-serif; line-height: 1.4; }
+.now .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--bg); border-radius: 18px; padding: 4px 12px; cursor: pointer; font-size: 13px; }
+.chip.on { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+form.add { display: flex; gap: 8px; padding: 14px 16px 0; }
+form.add input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.btn { border: 0; border-radius: 10px; padding: 10px 16px; background: var(--brand); color: var(--brand-ink); font-weight: 700; cursor: pointer; }
+.hint { color: var(--muted); font-size: 12px; padding: 4px 16px 0; }
+.tabs { display: flex; gap: 6px; padding: 14px 16px 0; }
+.tabs button { flex: 1; border: 0; background: var(--card); padding: 8px; border-radius: 10px; cursor: pointer; color: var(--muted); box-shadow: var(--shadow); }
+.tabs button[aria-selected="true"] { background: var(--brand); color: var(--brand-ink); font-weight: 700; }
+.list { padding: 12px 16px 24px; display: grid; gap: 10px; }
+.item { display: flex; gap: 10px; align-items: center; background: var(--card); border-radius: 12px; padding: 8px; box-shadow: var(--shadow); }
+.item.playing { outline: 2px solid var(--brand); }
+.thumb { width: 128px; aspect-ratio: 16/9; border-radius: 8px; object-fit: cover; background: #333; flex: none; cursor: pointer; }
+.item .info { flex: 1; min-width: 0; cursor: pointer; }
+.item .title { font-family: "Inter", system-ui, sans-serif; line-height: 1.35; font-size: 14px; font-weight: 600;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.item .meta { font-size: 12px; color: var(--muted); font-family: "Inter", system-ui, sans-serif; margin-top: 2px; }
+.item .acts { display: flex; flex-direction: column; gap: 4px; }
+.icon { border: 0; background: transparent; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 17px; }
+.icon:hover { background: var(--bg); }
+.empty { text-align: center; color: var(--muted); padding: 28px 8px; }
+.install { margin: 14px 16px 0; background: var(--card); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); font-size: 14px; }
+.install b { color: var(--brand); }
+.install .x { float: inline-end; }
+.toast { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: #222; color: #fff;
+  padding: 8px 16px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+.toast.show { opacity: 1; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <svg class="logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#e02424"/><path d="M206 166v180l150-90z" fill="#fff"/></svg>
+    <h1>میری ویڈیوز</h1>
+    <button class="icon" id="themeBtn" aria-label="Theme">◐</button>
+  </header>
+
+  <div class="player-wrap">
+    <div class="player"><div id="yt" class="placeholder">نیچے کوئی ویڈیو منتخب کریں یا YouTube لنک ڈالیں</div></div>
+  </div>
+  <div class="now hidden" id="now">
+    <div class="t" id="nowTitle"></div>
+    <div class="row">
+      <button class="chip" id="prevBtn">⏮ پچھلی</button>
+      <button class="chip" id="nextBtn">اگلی ⏭</button>
+      <button class="chip" id="autoBtn">خودکار اگلی</button>
+      <button class="chip" id="openBtn">YouTube میں کھولیں ↗</button>
+    </div>
+  </div>
+
+  <div class="install hidden" id="installTip">
+    <button class="icon x" id="tipClose" aria-label="Close">✕</button>
+    📱 <b>iPhone پر ایپ بنائیں:</b> Safari میں نیچے <b>Share ⬆️</b> بٹن دبائیں، پھر <b>"Add to Home Screen"</b> منتخب کریں۔
+  </div>
+
+  <form class="add" id="addForm">
+    <input id="urlInput" class="ltr" type="url" inputmode="url" placeholder="https://youtu.be/…  یا playlist لنک" required autocomplete="off">
+    <button class="btn" type="submit">شامل</button>
+  </form>
+  <div class="hint">YouTube ایپ میں ویڈیو پر Share → Copy Link کریں، پھر یہاں paste کریں۔</div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="list" aria-selected="true">میری لسٹ</button>
+    <button role="tab" data-tab="fav" aria-selected="false">پسندیدہ ★</button>
+    <button role="tab" data-tab="recent" aria-selected="false">حالیہ</button>
+  </div>
+  <div class="list" id="list"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const KEY = 'meri-videos-v1';
+  const $ = id => document.getElementById(id);
+
+  function load() {
+    try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.items)) return s; } catch (_) {}
+    return { items: [], recent: [], auto: true, theme: '', tipClosed: false };
+  }
+  let state = load();
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} };
+
+  let tab = 'list', current = null, player = null, playerReady = false, apiReady = false, pendingId = null;
+
+  function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 1800); }
+
+  // Accepts watch, youtu.be, shorts, embed, live, music links and playlist links.
+  function parse(raw) {
+    let u;
+    try { u = new URL(raw.trim()); } catch (_) {
+      return /^[\w-]{11}$/.test(raw.trim()) ? { type: 'video', id: raw.trim() } : null;
+    }
+    const host = u.hostname.replace(/^www\.|^m\.|^music\./, '');
+    let id = null;
+    if (host === 'youtu.be') id = u.pathname.slice(1, 12);
+    else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+      id = u.searchParams.get('v');
+      const m = u.pathname.match(/^\/(shorts|embed|live|v)\/([\w-]{11})/);
+      if (!id && m) id = m[2];
+      const list = u.searchParams.get('list');
+      if (!id && list) return { type: 'playlist', id: list };
+    }
+    return id && /^[\w-]{11}$/.test(id) ? { type: 'video', id } : null;
+  }
+
+  async function fetchTitle(item) {
+    const url = item.type === 'playlist' ? `https://www.youtube.com/playlist?list=${item.id}` : `https://www.youtube.com/watch?v=${item.id}`;
+    try {
+      const r = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`);
+      if (r.ok) { const j = await r.json(); return { title: j.title, author: j.author_name, thumb: j.thumbnail_url }; }
+    } catch (_) {}
+    return null;
+  }
+
+  $('addForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const p = parse($('urlInput').value);
+    if (!p) return toast('یہ درست YouTube لنک نہیں');
+    if (state.items.some(i => i.id === p.id)) { toast('یہ پہلے سے لسٹ میں ہے'); $('urlInput').value = ''; return; }
+    const item = { ...p, title: p.type === 'playlist' ? 'Playlist' : 'Video', author: '', fav: false, added: Date.now() };
+    state.items.unshift(item); save(); $('urlInput').value = '';
+    tab = 'list'; render(); play(item);
+    const meta = await fetchTitle(item);
+    if (meta) { Object.assign(item, { title: meta.title, author: meta.author, thumb: meta.thumb }); save(); render(); if (current && current.id === item.id) showNow(item); }
+  });
+
+  function thumbOf(i) { return i.thumb || (i.type === 'video' ? `https://i.ytimg.com/vi/${i.id}/mqdefault.jpg` : 'icon.svg'); }
+
+  function visible() {
+    if (tab === 'fav') return state.items.filter(i => i.fav);
+    if (tab === 'recent') return state.recent.map(id => state.items.find(i => i.id === id)).filter(Boolean);
+    return state.items;
+  }
+
+  function render() {
+    document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
+    $('autoBtn').classList.toggle('on', state.auto);
+    const list = $('list'); list.replaceChildren();
+    const items = visible();
+    if (!items.length) {
+      const d = document.createElement('div'); d.className = 'empty';
+      d.textContent = tab === 'fav' ? 'ابھی کوئی پسندیدہ ویڈیو نہیں — ☆ دبائیں' : tab === 'recent' ? 'ابھی کچھ نہیں دیکھا' : 'اوپر YouTube لنک ڈال کر لسٹ بنائیں';
+      list.append(d); return;
+    }
+    items.forEach(i => {
+      const el = document.createElement('div');
+      el.className = 'item' + (current && current.id === i.id ? ' playing' : '');
+      el.innerHTML = `<img class="thumb" alt="" loading="lazy"><div class="info"><div class="title"></div><div class="meta"></div></div>
+        <div class="acts"><button class="icon fav"></button><button class="icon del" aria-label="Delete">🗑</button></div>`;
+      el.querySelector('.thumb').src = thumbOf(i);
+      el.querySelector('.title').textContent = i.title;
+      el.querySelector('.meta').textContent = (i.type === 'playlist' ? '▶︎ Playlist · ' : '') + (i.author || '');
+      const fav = el.querySelector('.fav');
+      fav.textContent = i.fav ? '★' : '☆'; fav.setAttribute('aria-label', 'Favorite');
+      fav.onclick = () => { i.fav = !i.fav; save(); render(); };
+      el.querySelector('.del').onclick = () => {
+        if (!confirm('یہ ویڈیو لسٹ سے ہٹا دیں؟')) return;
+        state.items = state.items.filter(x => x.id !== i.id);
+        state.recent = state.recent.filter(id => id !== i.id); save(); render();
+      };
+      el.querySelector('.thumb').onclick = el.querySelector('.info').onclick = () => play(i);
+      list.append(el);
+    });
+  }
+
+  function showNow(i) {
+    $('now').classList.remove('hidden');
+    $('nowTitle').textContent = i.title;
+  }
+
+  // Official YouTube IFrame Player API.
+  window.onYouTubeIframeAPIReady = () => { apiReady = true; if (pendingId) play(pendingId); };
+  const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; document.head.append(s);
+
+  function play(i) {
+    current = i;
+    state.recent = [i.id, ...state.recent.filter(x => x !== i.id)].slice(0, 30); save();
+    showNow(i); render();
+    if (!apiReady) { pendingId = i; return; }
+    pendingId = null;
+    const vars = { playsinline: 1, rel: 0, modestbranding: 1, autoplay: 1 };
+    if (i.type === 'playlist') { vars.listType = 'playlist'; vars.list = i.id; }
+    if (player) {
+      if (playerReady) cue(i); // otherwise onReady loads `current`
+      return;
+    }
+    $('yt').className = '';
+    $('yt').textContent = '';
+    player = new YT.Player('yt', {
+      host: 'https://www.youtube-nocookie.com',
+      videoId: i.type === 'video' ? i.id : undefined,
+      playerVars: vars,
+      events: {
+        onReady: () => { playerReady = true; if (current && current.id !== i.id) cue(current); },
+        onStateChange: e => { if (e.data === YT.PlayerState.ENDED && state.auto && current && current.type === 'video') step(1); },
+        onError: e => {
+          // 101/150: owner disabled embedding.
+          if (e.data === 101 || e.data === 150) toast('یہ ویڈیو باہر چلانے کی اجازت نہیں — YouTube میں کھولیں');
+          else toast('ویڈیو نہیں چل سکی');
+        },
+      },
+    });
+  }
+
+  function cue(i) {
+    i.type === 'playlist' ? player.loadPlaylist({ list: i.id, listType: 'playlist' }) : player.loadVideoById(i.id);
+  }
+
+  function step(dir) {
+    const items = visible().length ? visible() : state.items;
+    if (!items.length) return;
+    const idx = current ? items.findIndex(i => i.id === current.id) : -1;
+    play(items[(idx + dir + items.length) % items.length]);
+  }
+
+  $('prevBtn').onclick = () => step(-1);
+  $('nextBtn').onclick = () => step(1);
+  $('autoBtn').onclick = () => { state.auto = !state.auto; save(); render(); };
+  $('openBtn').onclick = () => {
+    if (!current) return;
+    const url = current.type === 'playlist' ? `https://www.youtube.com/playlist?list=${current.id}` : `https://www.youtube.com/watch?v=${current.id}`;
+    window.open(url, '_blank', 'noopener');
+  };
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.tab; render(); });
+
+  function applyTheme() { state.theme ? document.documentElement.dataset.theme = state.theme : delete document.documentElement.dataset.theme; }
+  $('themeBtn').onclick = () => {
+    const dark = state.theme ? state.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    state.theme = dark ? 'light' : 'dark'; save(); applyTheme();
+  };
+
+  // Show the Add-to-Home-Screen tip on iOS Safari when not already installed.
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  if (ios && !standalone && !state.tipClosed) $('installTip').classList.remove('hidden');
+  $('tipClose').onclick = () => { state.tipClosed = true; save(); $('installTip').classList.add('hidden'); };
+
+  // Links shared into the app (?url=...) are added automatically.
+  const shared = new URLSearchParams(location.search).get('url') || new URLSearchParams(location.search).get('text');
+  if (shared) { $('urlInput').value = shared; history.replaceState(null, '', location.pathname); setTimeout(() => $('addForm').requestSubmit(), 0); }
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+  applyTheme(); render();
+})();
+</script>
+</body>
+</html>
