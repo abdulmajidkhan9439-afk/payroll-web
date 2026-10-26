@@ -1,10 +1,5 @@
 import { neon } from "@netlify/neon";
-
-function normalizeUnitKey(raw){
-  const text = String(raw ?? "").trim();
-  if(!text) return "global";
-  return text.slice(0, 120);
-}
+import { resolveUnitKey, verifyRequest } from "../lib/auth.js";
 
 function validateState(state){
   return !!state && typeof state === "object";
@@ -15,6 +10,16 @@ export default async (req) => {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
+  let claims;
+  try{
+    claims = verifyRequest(req);
+  }catch{
+    return new Response("Server misconfigured", { status: 500 });
+  }
+  if(!claims){
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   let body;
   try{
     body = await req.json();
@@ -22,7 +27,7 @@ export default async (req) => {
     return new Response("Bad Request", { status: 400 });
   }
 
-  const unitKey = normalizeUnitKey(body?.unit_id);
+  const unitKey = resolveUnitKey(claims, body?.unit_id);
   const state = body?.state;
 
   if(!validateState(state)){

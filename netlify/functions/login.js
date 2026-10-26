@@ -1,5 +1,6 @@
 import { neon } from "@netlify/neon";
 import bcrypt from "bcryptjs";
+import { createToken } from "../lib/auth.js";
 
 export default async (req) => {
   if (req.method !== "POST") {
@@ -47,10 +48,18 @@ export default async (req) => {
     return new Response("Invalid", { status: 401 });
   }
 
+  let token;
+  try {
+    token = createToken(user);
+  } catch {
+    return new Response("Server misconfigured", { status: 500 });
+  }
+
   return Response.json({
     id: user.id,
     username: user.username,
     role: user.role,
-    unit_id: user.unit_id
+    unit_id: user.unit_id,
+    token
   });
 };

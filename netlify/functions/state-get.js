@@ -1,18 +1,23 @@
 import { neon } from "@netlify/neon";
-
-function normalizeUnitKey(raw){
-  const text = String(raw ?? "").trim();
-  if(!text) return "global";
-  return text.slice(0, 120);
-}
+import { resolveUnitKey, verifyRequest } from "../lib/auth.js";
 
 export default async (req) => {
   if(req.method !== "GET"){
     return new Response("Method Not Allowed", { status: 405 });
   }
 
+  let claims;
+  try{
+    claims = verifyRequest(req);
+  }catch{
+    return new Response("Server misconfigured", { status: 500 });
+  }
+  if(!claims){
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   const url = new URL(req.url);
-  const unitKey = normalizeUnitKey(url.searchParams.get("unit_id"));
+  const unitKey = resolveUnitKey(claims, url.searchParams.get("unit_id"));
   const sql = neon();
 
   try{

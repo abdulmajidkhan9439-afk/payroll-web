@@ -201,14 +201,6 @@
           <i class="fas fa-sign-in-alt"></i> Login
         </button>
       </form>
-      <div style="margin-top:14px;color:#666;font-size:.95rem">
-        Default: <b>admin</b> / <b>admin123</b>
-      </div>
-      <!-- Added forgot password link. When clicked it will reset the admin credentials
-           back to the default (admin/admin123). -->
-      <div style="margin-top:8px;text-align:center">
-        <a href="#" id="forgotPasswordBtn" style="font-size:.9rem;color:#2d5be3;text-decoration:underline">Forgot password?</a>
-      </div>
     </div>
   </div>
 
@@ -1346,6 +1338,19 @@ return c;
         }
       }
 
+      function cloudAuthHeaders(user){
+        return user && user.token ? { 'Authorization': `Bearer ${user.token}` } : null;
+      }
+
+      function handleCloudUnauthorized(){
+        cloudSync.available = false;
+        localStorage.removeItem(K.USR);
+        clearSession();
+        showNotification('Session expired. Please login again.','warning');
+        $('mainApp').style.display='none';
+        $('loginScreen').style.display='flex';
+      }
+
       function getCloudUnitKey(){
         const u = readCurrentUser();
         if(!u || u.unit_id === null || u.unit_id === undefined || u.unit_id === '') return 'global';
@@ -1388,19 +1393,24 @@ return c;
 
       async function saveCloudState({ silent=true } = {}){
         const user = readCurrentUser();
-        if(!user) return false;
+        const authHeaders = cloudAuthHeaders(user);
+        if(!authHeaders) return false;
         if(cloudSync.syncing) return false;
         cloudSync.syncing = true;
 
         try{
           const res = await fetch('/.netlify/functions/state-save', {
             method:'POST',
-            headers:{ 'Content-Type':'application/json' },
+            headers:{ 'Content-Type':'application/json', ...authHeaders },
             body: JSON.stringify({
               unit_id: getCloudUnitKey(),
               state: serializeCurrentState()
             })
           });
+          if(res.status === 401){
+            handleCloudUnauthorized();
+            return false;
+          }
           if(!res.ok) throw new Error(`HTTP ${res.status}`);
           cloudSync.available = true;
           return true;
@@ -1415,11 +1425,16 @@ return c;
 
       async function syncCloudStateOnStartup(){
         const user = readCurrentUser();
-        if(!user) return;
+        const authHeaders = cloudAuthHeaders(user);
+        if(!authHeaders) return;
 
         try{
           const unit = encodeURIComponent(getCloudUnitKey());
-          const res = await fetch(`/.netlify/functions/state-get?unit_id=${unit}`);
+          const res = await fetch(`/.netlify/functions/state-get?unit_id=${unit}`, { headers: authHeaders });
+          if(res.status === 401){
+            handleCloudUnauthorized();
+            return;
+          }
           if(!res.ok) throw new Error(`HTTP ${res.status}`);
           const payload = await res.json();
           cloudSync.available = true;
@@ -4500,24 +4515,6 @@ $('presentDays').value = paidDays.toFixed(1);
           $('password').value='';
         });
 
-        // Forgot password handler.  Clicking the link will reset the admin credentials
-        // back to the default user/password (admin/admin123).  A confirmation prompt
-        // is shown to prevent accidental resets.  After resetting, the username and
-        // password fields are cleared and a notification is shown.
-        const forgotEl = $('forgotPasswordBtn');
-        if(forgotEl){
-          forgotEl.addEventListener('click', async (ev) => {
-            ev.preventDefault();
-            if(!confirm('Reset admin password to default (admin/admin123)?')) return;
-            const defaultHash = await sha256('admin123');
-            // set default credentials into localStorage
-            localStorage.setItem(K.ADM, JSON.stringify({ username:'admin', passHash: defaultHash }));
-            // clear form inputs
-            $('username').value = '';
-            $('password').value = '';
-            showNotification('Password reset to default (admin/admin123)', 'warning');
-          });
-        }
       }
 
       // ---- Sample Data (only if empty) ----

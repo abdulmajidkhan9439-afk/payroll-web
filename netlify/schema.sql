@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS app_state (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Generate a bcrypt hash locally (never through a public endpoint):
+--   npx -y -p bcryptjs node -e "console.log(require('bcryptjs').hashSync(process.argv[1], 10))" 'YourStrongPassword'
 -- Example insert (replace hash value with bcrypt hash):
 -- INSERT INTO users (username, password_hash, role, unit_id, is_active)
 -- VALUES ('admin', '$2a$10$replace_with_bcrypt_hash', 'admin', NULL, TRUE)
