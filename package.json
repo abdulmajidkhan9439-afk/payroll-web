@@ -1,0 +1,9 @@
+{
+  "name": "bsfpayroll2026",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@netlify/neon": "^1.0.0",
+    "bcryptjs": "^2.4.3"
+  }
+}
